@@ -22,5 +22,8 @@ int main(int argc, char const *argv[])
     BinaryTree tree = BinaryTree(&root);
 
     tree.inorder_tree_walk(&root);
+
+    Node result = *tree.search(&root, 8);
+    printf("%d\n", result.get_val());
     return 0;
 }
