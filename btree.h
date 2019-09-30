@@ -4,8 +4,7 @@
 #include <cmath>
 #include <vector>
 using namespace std;
-/*TODO: 1) insertion, deletion, completion, rotations.
-        2) Check specific AVL-Tree methods that I need*/
+/*TODO: 1) insertion-> add rebalancing
 class BinaryTree
 {
 public:
@@ -21,13 +20,15 @@ public:
     void assign_parent(Node *root);
     void insert(Node *node);
     void _transplant(Node *u, Node *v);
-    void _delete(int key);
-    void left_rotate(Node *node);
-    void right_rotate(Node *node);
+
+    void get_height();
 
     int get_height(Node *root);
     int get_balance(Node *node);
     bool is_avl();
+    Node *_delete(Node *root, int key);
+    Node *left_rotate(Node *node);
+    Node *right_rotate(Node *node);
     Node *search(Node *x, int key);
     Node *tree_minimum(Node *x);
     Node *tree_maximum(Node *x);
@@ -40,9 +41,9 @@ BinaryTree::BinaryTree(vector<int> A, int start, int finish)
     /*
     Constructor from an array.
     */
-    this->root = (this->root_from_array(A, start, finish));
-    this->assign_parent(this->root);                   // this makes contruction of a tree nlogn
-    this->root->height = this->get_height(this->root); // this makes construction of a tree nlogn
+this->root = (this->root_from_array(A, start, finish));
+this->assign_parent(this->root);                   // this makes contruction of a tree nlogn
+this->root->height = this->get_height(this->root); // this makes construction of a tree nlogn
 }
 
 BinaryTree::BinaryTree(Node *root)
@@ -190,6 +191,11 @@ int BinaryTree::get_height(Node *root)
     return max_height;
 }
 
+void BinaryTree::get_height()
+{
+    int height = this->get_height(this->root);
+}
+
 Node *BinaryTree::root_from_array(vector<int> A, int start, int finish)
 {
     if (start > finish)
@@ -281,41 +287,118 @@ void BinaryTree::_transplant(Node *u, Node *v)
     }
 }
 
-void BinaryTree::_delete(int key)
+Node *BinaryTree::left_rotate(Node *x)
 {
-    Node *x = this->root;
-    while (x->val != key && x != NIL)
+    Node *y = x->right;
+    x->right = y->left;
+    if (y->left != NIL)
     {
-        if (key > x->val)
-        {
-            x = x->right;
-        }
-        else
-        {
-            x = x->left;
-        }
+        y->left->p = x;
     }
-    // x is the pointer to the node to be deleted
-
-    if (x->left == NIL)
+    y->p = x->p;
+    if (x->p == NIL)
     {
-        this->_transplant(x, x->right);
+        this->root = y;
     }
-    else if (x->right == NIL)
+    else if (x == x->p->left)
     {
-        this->_transplant(x, x->left);
+        x->p->left = y;
     }
     else
     {
-        Node *y = this->tree_minimum(x->right);
-        if (y->p != x)
+        x->p->right = y;
+    }
+    y->left = x;
+    x->p = y;
+    return y;
+}
+
+Node *BinaryTree::right_rotate(Node *y)
+{
+    Node *x = y->left;
+    y->left = x->right;
+    if (x->right != NIL)
+    {
+        x->right->p = y;
+    }
+    x->p = y->p;
+    if (y->p == NIL)
+    {
+        this->root = x;
+    }
+    else if (y == y->p->left)
+    {
+        y->p->left = x;
+    }
+    else
+    {
+        y->p->right = x;
+    }
+    x->right = y;
+    y->p = x;
+
+    return x;
+}
+
+Node *BinaryTree::_delete(Node *root, int key)
+{
+    if (root == NIL)
+    {
+        return root;
+    }
+    Node *deleted = root;
+    Node *y;
+    // Classic BST Deletion
+    if (key < root->get_val())
+    {
+        deleted = this->_delete(root->left, key);
+    }
+    else if (key > root->get_val())
+    {
+        deleted = this->_delete(root->right, key);
+    }
+    else
+    {
+        if (deleted->left == NIL)
+            this->_transplant(deleted, deleted->right);
+
+        else if (deleted->right == NIL)
         {
-            this->_transplant(y, y->right);
-            y->right = x->right;
-            y->right->p = y;
+            this->_transplant(deleted, deleted->left);
         }
-        this->_transplant(x, y);
-        y->left = x->left;
-        y->left->p = y;
+        else
+        {
+            y = this->tree_minimum(deleted->right);
+            if (y->p != deleted)
+            {
+                this->_transplant(y, y->right);
+                y->right = deleted->right;
+                y->right->p = y;
+            }
+            this->_transplant(deleted, y);
+            y->left = deleted->left;
+            y->left->p = y;
+        }
+        this->get_height(); // possible bottleneck, recalculating heights
+        // rebalancing the tree.
+        int balance = this->get_balance(root);
+        if (balance > 1 && this->get_balance(root->left) >= 0)
+        {
+            return this->right_rotate(root);
+        }
+        if (balance > 1 && this->get_balance(root->left) < 0)
+        {
+            this->left_rotate(root->left);
+            return this->right_rotate(root);
+        }
+        if (balance < -1 && this->get_balance(root->right) <= 0)
+        {
+            return this->left_rotate(root);
+        }
+        if (balance < -1 && this->get_balance(root->right) <= 0)
+        {
+            this->right_rotate(root->right);
+            return this->left_rotate(root);
+        }
     }
 }
