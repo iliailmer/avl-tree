@@ -7,6 +7,7 @@ class Node
 private:
 public:
     int val;
+    int height;
     Node *left;
     Node *right;
     Node *p;
@@ -30,6 +31,7 @@ Node::Node()
 Node::Node(int value)
 {
     Node::val = value;
+    Node::height = 0;
     Node::left = NIL;
     Node::right = NIL;
     Node::p = NIL;
@@ -78,7 +80,7 @@ Node *newNode(int value)
     node->left = NIL;
     node->right = NIL;
     node->p = NIL;
-
+    node->height = 0;
     return node;
 }
 

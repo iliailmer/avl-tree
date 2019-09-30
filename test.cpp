@@ -13,8 +13,11 @@ int main(int argc, char const *argv[])
         A[i] = i;
     }
     BinaryTree tree = BinaryTree(A, 0, n - 1);
-    printf("%d\n", tree.root->right->left->get_parent());
-    printf("%d\n", tree.root->right->left->get_val());
+    printf("Tree Height: %d,\n", tree.get_height(tree.root));
+    printf("Left Height: %d,\n", tree.get_height(tree.root->left));
+    printf("Right Height: %d,\n", tree.get_height(tree.root->right));
+    printf("Is it AVL? 1 if true, 0 otherwise: %d\n", tree.is_avl());
+    printf("Root's left's height:%d\n", tree.root->left->height);
     return 0;
 }
 /*
