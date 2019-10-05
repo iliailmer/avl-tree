@@ -4,7 +4,7 @@
 #include <cmath>
 #include <vector>
 using namespace std;
-/*TODO: 1) insertion-> add rebalancing
+/*TODO: 1) insertion-> add rebalancing  */
 class BinaryTree
 {
 public:
@@ -41,9 +41,9 @@ BinaryTree::BinaryTree(vector<int> A, int start, int finish)
     /*
     Constructor from an array.
     */
-this->root = (this->root_from_array(A, start, finish));
-this->assign_parent(this->root);                   // this makes contruction of a tree nlogn
-this->root->height = this->get_height(this->root); // this makes construction of a tree nlogn
+    this->root = (this->root_from_array(A, start, finish));
+    this->assign_parent(this->root);                   // this makes contruction of a tree nlogn
+    this->root->height = this->get_height(this->root); // this makes construction of a tree nlogn
 }
 
 BinaryTree::BinaryTree(Node *root)
