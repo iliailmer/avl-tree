@@ -5,14 +5,14 @@
 #include <vector>
 using namespace std;
 /*TODO: 1) insertion-> add rebalancing  */
-class BinaryTree
+class AVLTree
 {
 public:
     Node *root;
 
-    BinaryTree(Node *root); // initialize a tree with a root
-    BinaryTree(vector<int> A, int start, int finish);
-    ~BinaryTree();
+    AVLTree(Node *root); // initialize a tree with a root
+    AVLTree(vector<int> A, int start, int finish);
+    ~AVLTree();
 
     void inorder_tree_walk(Node *node);
     void preorder_tree_walk(Node *node);
@@ -27,6 +27,7 @@ public:
     int get_balance(Node *node);
     bool is_avl();
     Node *_delete(Node *root, int key);
+    Node *rebalance(Node *node);
     Node *left_rotate(Node *node);
     Node *right_rotate(Node *node);
     Node *search(Node *x, int key);
@@ -36,17 +37,17 @@ public:
     Node *root_from_array(vector<int> A, int start, int finish);
 };
 
-BinaryTree::BinaryTree(vector<int> A, int start, int finish)
+AVLTree::AVLTree(vector<int> A, int start, int finish)
 {
     /*
-    Constructor from an array.
+    Constructor from a sorted array.
     */
     this->root = (this->root_from_array(A, start, finish));
     this->assign_parent(this->root);                   // this makes contruction of a tree nlogn
     this->root->height = this->get_height(this->root); // this makes construction of a tree nlogn
 }
 
-BinaryTree::BinaryTree(Node *root)
+AVLTree::AVLTree(Node *root)
 {
     /*
     Constructor from a single root
@@ -54,12 +55,12 @@ BinaryTree::BinaryTree(Node *root)
     this->root = root;
 }
 
-BinaryTree::~BinaryTree()
+AVLTree::~AVLTree()
 {
     /* Destructor */
 }
 
-void BinaryTree::inorder_tree_walk(Node *node)
+void AVLTree::inorder_tree_walk(Node *node)
 {
     /* Inorder Traversal */
     if (node != NIL)
@@ -70,7 +71,7 @@ void BinaryTree::inorder_tree_walk(Node *node)
     }
 }
 
-void BinaryTree::preorder_tree_walk(Node *node)
+void AVLTree::preorder_tree_walk(Node *node)
 {
     /* Inorder Traversal */
     if (node != NIL)
@@ -81,7 +82,7 @@ void BinaryTree::preorder_tree_walk(Node *node)
     }
 }
 
-void BinaryTree::postorder_tree_walk(Node *node)
+void AVLTree::postorder_tree_walk(Node *node)
 {
     /* Inorder Traversal */
     if (node != NIL)
@@ -92,7 +93,7 @@ void BinaryTree::postorder_tree_walk(Node *node)
     }
 }
 
-void BinaryTree::assign_parent(Node *root)
+void AVLTree::assign_parent(Node *root)
 {
     if (root != NIL)
     {
@@ -109,7 +110,7 @@ void BinaryTree::assign_parent(Node *root)
     }
 }
 
-Node *BinaryTree::search(Node *x, int key)
+Node *AVLTree::search(Node *x, int key)
 {
     /* Search for a key */
     while (x != NIL && key != x->get_val())
@@ -142,7 +143,7 @@ Node *BinaryTree::search(Node *x, int key)
     } */
 }
 
-Node *BinaryTree::tree_minimum(Node *x)
+Node *AVLTree::tree_minimum(Node *x)
 {
     while (x->left != NIL)
     {
@@ -151,7 +152,7 @@ Node *BinaryTree::tree_minimum(Node *x)
     return x;
 }
 
-Node *BinaryTree::tree_maximum(Node *x)
+Node *AVLTree::tree_maximum(Node *x)
 {
     while (x->right != NIL)
     {
@@ -160,7 +161,7 @@ Node *BinaryTree::tree_maximum(Node *x)
     return x;
 }
 
-Node *BinaryTree::tree_succsessor(Node *x)
+Node *AVLTree::tree_succsessor(Node *x)
 {
     if (x->right == NIL)
     {
@@ -177,7 +178,7 @@ Node *BinaryTree::tree_succsessor(Node *x)
     return y;
 }
 
-int BinaryTree::get_height(Node *root)
+int AVLTree::get_height(Node *root)
 {
     if (root == NIL)
     {
@@ -191,12 +192,12 @@ int BinaryTree::get_height(Node *root)
     return max_height;
 }
 
-void BinaryTree::get_height()
+void AVLTree::get_height()
 {
     int height = this->get_height(this->root);
 }
 
-Node *BinaryTree::root_from_array(vector<int> A, int start, int finish)
+Node *AVLTree::root_from_array(vector<int> A, int start, int finish)
 {
     if (start > finish)
     {
@@ -211,7 +212,7 @@ Node *BinaryTree::root_from_array(vector<int> A, int start, int finish)
     return root;
 }
 
-void BinaryTree::insert(Node *node)
+void AVLTree::insert(Node *node)
 {
     /*
     insert a node into a binary tree.
@@ -238,14 +239,24 @@ void BinaryTree::insert(Node *node)
     else if (node->get_val() < y->get_val())
     {
         y->left = node;
+        while (y != this->root)
+        {
+            y = this->rebalance(y);
+            y = y->p;
+        }
     }
     else
     {
         y->right = node;
+        while (y != this->root)
+        {
+            y = this->rebalance(y);
+            y = y->p;
+        }
     }
 }
 
-int BinaryTree::get_balance(Node *node)
+int AVLTree::get_balance(Node *node)
 {
     if (node == NIL)
     {
@@ -254,7 +265,7 @@ int BinaryTree::get_balance(Node *node)
     return this->get_height(node->left) - this->get_height(node->right);
 }
 
-bool BinaryTree::is_avl()
+bool AVLTree::is_avl()
 {
     int balance = this->get_balance(this->root);
     if (balance == 0 || balance == 1 || balance == -1)
@@ -267,7 +278,7 @@ bool BinaryTree::is_avl()
     }
 }
 
-void BinaryTree::_transplant(Node *u, Node *v)
+void AVLTree::_transplant(Node *u, Node *v)
 {
     if (u->p == NIL)
     {
@@ -287,7 +298,7 @@ void BinaryTree::_transplant(Node *u, Node *v)
     }
 }
 
-Node *BinaryTree::left_rotate(Node *x)
+Node *AVLTree::left_rotate(Node *x)
 {
     Node *y = x->right;
     x->right = y->left;
@@ -313,7 +324,7 @@ Node *BinaryTree::left_rotate(Node *x)
     return y;
 }
 
-Node *BinaryTree::right_rotate(Node *y)
+Node *AVLTree::right_rotate(Node *y)
 {
     Node *x = y->left;
     y->left = x->right;
@@ -340,7 +351,7 @@ Node *BinaryTree::right_rotate(Node *y)
     return x;
 }
 
-Node *BinaryTree::_delete(Node *root, int key)
+Node *AVLTree::_delete(Node *root, int key)
 {
     if (root == NIL)
     {
@@ -401,4 +412,29 @@ Node *BinaryTree::_delete(Node *root, int key)
             return this->left_rotate(root);
         }
     }
+    return NULL; // to avoid a warning
+}
+
+Node *AVLTree::rebalance(Node *node)
+{
+    int balance = this->get_balance(node);
+    if (balance > 1 && this->get_balance(node->left) >= 0)
+    {
+        return this->right_rotate(node);
+    }
+    if (balance > 1 && this->get_balance(node->left) < 0)
+    {
+        this->left_rotate(node->left);
+        return this->right_rotate(node);
+    }
+    if (balance < -1 && this->get_balance(node->right) <= 0)
+    {
+        return this->left_rotate(node);
+    }
+    if (balance < -1 && this->get_balance(node->right) <= 0)
+    {
+        this->right_rotate(node->right);
+        return this->left_rotate(node);
+    }
+    return NULL; // to avoid a warning
 }
