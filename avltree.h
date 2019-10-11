@@ -13,19 +13,20 @@ public:
     AVLTree(Node *root); // initialize a tree with a root
     AVLTree(vector<int> A, int start, int finish);
     ~AVLTree();
-
+    int deletion_success;
     void inorder_tree_walk(Node *node);
     void preorder_tree_walk(Node *node);
     void postorder_tree_walk(Node *node);
     void assign_parent(Node *root);
-    void insert(Node *node);
+
     void _transplant(Node *u, Node *v);
 
     void get_height();
 
     int get_height(Node *root);
     int get_balance(Node *node);
-    bool is_avl();
+    bool is_avl(Node *root);
+    Node *insert(Node *root, int key);
     Node *_delete(Node *root, int key);
     Node *rebalance(Node *node);
     Node *left_rotate(Node *node);
@@ -212,48 +213,50 @@ Node *AVLTree::root_from_array(vector<int> A, int start, int finish)
     return root;
 }
 
-void AVLTree::insert(Node *node)
+Node *AVLTree::insert(Node *root, int key)
 {
     /*
     insert a node into a binary tree.
     */
-    Node *y = NIL;
-    Node *x = this->root;
-    while (x != NIL)
+    if (root == NIL)
     {
-        y = x;
-        if (node->get_val() < x->get_val())
-        {
-            x = x->left;
-        }
-        else
-        {
-            x = x->right;
-        }
+        return (newNode(key)); // O(1)
     }
-    node->p = y;
-    if (y == NIL)
+    if (key < root->val)
     {
-        this->root = node;
+        root->left = insert(root->left, key); // T(n/2)
+        root->left->p = root;
     }
-    else if (node->get_val() < y->get_val())
+    else if (key > root->val)
     {
-        y->left = node;
-        while (y != this->root)
-        {
-            y = this->rebalance(y);
-            y = y->p;
-        }
+        root->right = insert(root->right, key); // T(n/2)
+        root->right->p = root;
     }
-    else
+    else // Equal keys are not allowed in BST
     {
-        y->right = node;
-        while (y != this->root)
-        {
-            y = this->rebalance(y);
-            y = y->p;
-        }
+        return root;
     }
+    root->height = this->get_height(root); // O(hlog(h))
+    int balance = this->get_balance(root); // O(1)
+    if (balance > 1 && key < root->left->val)
+    {
+        return this->right_rotate(root); // O(1)
+    }
+    if (balance > 1 && key > root->left->val)
+    {
+        this->left_rotate(root->left);
+        return this->right_rotate(root); // O(1)
+    }
+    if (balance < -1 && key > root->right->val)
+    {
+        return this->left_rotate(root); // O(1)
+    }
+    if (balance < -1 && key < root->right->val)
+    {
+        this->right_rotate(root->right);
+        return this->left_rotate(root); // O(1)
+    }
+    return root;
 }
 
 int AVLTree::get_balance(Node *node)
@@ -262,13 +265,35 @@ int AVLTree::get_balance(Node *node)
     {
         return 0;
     }
-    return this->get_height(node->left) - this->get_height(node->right);
+    int left_height, right_height;
+    if (node->left == NIL)
+    {
+        left_height = 0;
+    }
+    else
+    {
+        left_height = node->left->height;
+    }
+    if (node->right == NIL)
+    {
+        right_height = 0;
+    }
+    else
+    {
+        right_height = node->right->height;
+    }
+
+    return left_height - right_height;
 }
 
-bool AVLTree::is_avl()
+bool AVLTree::is_avl(Node *root)
 {
-    int balance = this->get_balance(this->root);
-    if (balance == 0 || balance == 1 || balance == -1)
+    if (root == NIL)
+    {
+        return true;
+    }
+    int balance = this->get_balance(root);
+    if (abs(balance) <= 1 && this->is_avl(root->left) && this->is_avl(root->right))
     {
         return true;
     }
@@ -351,69 +376,154 @@ Node *AVLTree::right_rotate(Node *y)
     return x;
 }
 
-Node *AVLTree::_delete(Node *root, int key)
+Node *AVLTree::_delete(Node *node, int key)
 {
-    if (root == NIL)
+
+    if (node == NIL)
+    {
+        this->deletion_success = 0;
+        return node;
+    }
+    //search for the required node
+    if (key < node->val)
+    {
+        node->left = this->_delete(node->left, key);
+    }
+    else if (key > node->val)
+    {
+        node->right = this->_delete(node->right, key);
+    }
+    else
+    {
+        // found it
+        // if it has one or no children
+        if ((node->left == NIL) || (node->right == NIL))
+        {
+            Node *temp;
+
+            if (node->left != NIL)
+            {
+                temp = node->left;
+            }
+            else
+            {
+                temp = node->right;
+            }
+            if (temp == NIL) // no children
+            {
+                temp = node;
+                node = NIL;
+            }
+            else
+            {
+                this->_transplant(node, temp);
+                //*node = *temp; // swap the content of the temp var into node.
+            }
+            this->deletion_success = 1;
+            free(temp);
+        }
+        else
+        {
+            // node with two children
+            Node *temp = this->tree_minimum(node->right);
+            node->val = temp->val;
+            node->right = this->_delete(node->right, temp->val);
+            this->deletion_success = 1;
+        }
+    }
+    if (node == NIL)
+    {
+        this->deletion_success = 1;
+        return node;
+    }
+    node->height = this->get_height(node);
+    int balance = this->get_balance(node);
+    if (balance > 1 && this->get_balance(node->left) >= 0)
+    {
+        return this->right_rotate(node);
+    }
+    if (balance > 1 && this->get_balance(node->left) < 0)
+    {
+        node->left = this->left_rotate(node->left);
+        return this->right_rotate(node);
+    }
+    if (balance < -1 && this->get_balance(node->right) <= 0)
+    {
+        return this->left_rotate(node);
+    }
+    if (balance < -1 && this->get_balance(node->right) > 0)
+    {
+        node->right = this->right_rotate(node->right);
+        return this->left_rotate(node);
+    }
+    return node;
+}
+
+/* if (root == NIL)
     {
         return root;
     }
-    Node *deleted = root;
     Node *y;
     // Classic BST Deletion
     if (key < root->get_val())
     {
-        deleted = this->_delete(root->left, key);
+        root->left = this->_delete(root->left, key);
     }
     else if (key > root->get_val())
     {
-        deleted = this->_delete(root->right, key);
+        root->right = this->_delete(root->right, key);
     }
     else
-    {
-        if (deleted->left == NIL)
-            this->_transplant(deleted, deleted->right);
-
-        else if (deleted->right == NIL)
+    { // root is the node we are deleting
+        if (root->left == NIL)
         {
-            this->_transplant(deleted, deleted->left);
+            this->_transplant(root, root->right);
+            root = root->right;
+        }
+        else if (root->right == NIL)
+        {
+            this->_transplant(root, root->left);
+            root = root->left;
         }
         else
         {
-            y = this->tree_minimum(deleted->right);
-            if (y->p != deleted)
+            y = this->tree_minimum(root->right);
+            if (y->p != root)
             {
                 this->_transplant(y, y->right);
-                y->right = deleted->right;
+                y->right = root->right;
                 y->right->p = y;
             }
-            this->_transplant(deleted, y);
-            y->left = deleted->left;
+            this->_transplant(root, y);
+            y->left = root->left;
             y->left->p = y;
-        }
-        this->get_height(); // possible bottleneck, recalculating heights
-        // rebalancing the tree.
-        int balance = this->get_balance(root);
-        if (balance > 1 && this->get_balance(root->left) >= 0)
-        {
-            return this->right_rotate(root);
-        }
-        if (balance > 1 && this->get_balance(root->left) < 0)
-        {
-            this->left_rotate(root->left);
-            return this->right_rotate(root);
-        }
-        if (balance < -1 && this->get_balance(root->right) <= 0)
-        {
-            return this->left_rotate(root);
-        }
-        if (balance < -1 && this->get_balance(root->right) <= 0)
-        {
-            this->right_rotate(root->right);
-            return this->left_rotate(root);
+            y->height = this->get_height(y);
+            root = y;
         }
     }
-    return NULL; // to avoid a warning
-}
+    // deletion is done, now onto rebalancing
+    root->height = this->get_height(root); // get the new heights
+    // rebalancing the tree.
+    int balance = this->get_balance(root);
+    if (balance > 1 && this->get_balance(root->left) >= 0)
+    {
+        return this->right_rotate(root);
+    }
+    if (balance > 1 && this->get_balance(root->left) < 0)
+    {
+        this->left_rotate(root->left);
+        return this->right_rotate(root);
+    }
+    if (balance < -1 && this->get_balance(root->right) <= 0)
+    {
+        return this->left_rotate(root);
+    }
+    if (balance < -1 && this->get_balance(root->right) <= 0)
+    {
+        this->right_rotate(root->right);
+        return this->left_rotate(root);
+    }
+    return root; // to avoid a warning */
 
 Node *AVLTree::rebalance(Node *node)
 {
@@ -436,5 +546,5 @@ Node *AVLTree::rebalance(Node *node)
         this->right_rotate(node->right);
         return this->left_rotate(node);
     }
-    return NULL; // to avoid a warning
+    return node; // no rebalancing required
 }

@@ -21,6 +21,17 @@ vector<int> create_random_data(int n, int min, int max)
     generate(begin(v), end(v), bind(dist, eng));
     return v;
 }
+int create_random_data(int min, int max)
+{
+    std::random_device r;
+    std::seed_seq seed{r(), r(), r(), r(), r(), r(), r(), r()};
+    std::mt19937 eng(seed); // a source of random data
+
+    std::uniform_int_distribution<int> dist(min, max);
+    int v;
+    v = dist(eng);
+    return v;
+}
 
 void display(vector<int> A)
 {
@@ -34,27 +45,77 @@ void display(vector<int> A)
 
 int main(int argc, char const *argv[])
 {
-    vector<int>
-        A = create_random_data(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]));
-    Node *root = newNode(A[0]);
+    vector<int> A = create_random_data(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]));
+
+    Node *root = NIL;
 
     //display(A);
 
     AVLTree tree = AVLTree(root);
-    auto start = high_resolution_clock::now();
-    for (size_t i = 1; i < A.size(); i++)
+
+    for (size_t i = 0; i < A.size(); i++)
     {
-        Node *x = newNode(A[i]);
-        tree.insert(x);
+        tree.root = tree.insert(tree.root, A[i]);
     }
+
+    printf("\nThe Tree: ");
+    tree.inorder_tree_walk(tree.root);
+    int random = create_random_data(atoi(argv[2]), atoi(argv[3])); // get 1 random integer
+    int val;
+    printf("\nInserting %d\n", random);
+    auto start = high_resolution_clock::now();
+    tree.root = tree.insert(tree.root, random);
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop - start);
-    cout << "Insertion time " << duration.count() << " microseconds, size " << A.size() << endl;
-    //printf("Inorder avl Tree: \n");
-    //tree.inorder_tree_walk(tree.root);
+
+    printf("The Tree: ");
+    tree.inorder_tree_walk(tree.root);
     printf("\n");
-    printf("Balance: %d\n", tree.get_balance(tree.root));
+
+    cout << "Insertion time " << duration.count() << " microseconds, size " << A.size() << endl;
+
+    cout << "Enter a value to find:" << endl;
+
+    cin >> val;
+    start = high_resolution_clock::now();
+    Node *found = NIL;
+    found = tree.search(tree.root, val);
+    stop = high_resolution_clock::now();
+    if (found != NIL)
+    {
+        printf("Success, found %d, its parent was %d\n", found->get_val(), found->p->get_val());
+    }
+    else
+    {
+        printf("Search failed, %d not found\n", val);
+    }
+    cout << "Search time " << duration.count() << " microseconds, size " << A.size() << endl;
+
+    cout << "Enter a value to delete" << endl;
+    cin >> val;
+    printf("\n");
+    printf("Before: ");
+    tree.inorder_tree_walk(tree.root);
+    start = high_resolution_clock::now();
+    Node *deleted = tree._delete(tree.root, val);
+    stop = high_resolution_clock::now();
+    printf("\n");
+    printf("After: ");
+    tree.inorder_tree_walk(tree.root);
+    printf("\n");
+    cout << "Deletion time " << duration.count() << " microseconds, size " << A.size() << endl;
+    cout << "Deletion status is " << tree.deletion_success<<endl;
+    printf("\n");
+    printf("Balance or the root: %d\n", tree.get_balance(tree.root));
     printf("Height: %d\n", tree.get_height(tree.root));
+    if (tree.is_avl(tree.root))
+    {
+        printf("Is AVL\n");
+    }
+    else
+    {
+        printf("Is Not AVL\n");
+    }
 }
 
 /*
