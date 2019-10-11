@@ -32,6 +32,7 @@ int create_random_data(int min, int max)
     v = dist(eng);
     return v;
 }
+void countLeaves(Node *tracker, int *counter);
 
 void display(vector<int> A)
 {
@@ -61,15 +62,22 @@ int main(int argc, char const *argv[])
     printf("\nThe Tree: ");
     tree.inorder_tree_walk(tree.root);
     int random = create_random_data(atoi(argv[2]), atoi(argv[3])); // get 1 random integer
-    int val;
+    int val, counter = 0;
+
+    counter = 0;
+    countLeaves(tree.root, &counter);
+    printf("\nLeaves: %d\n", counter);
     printf("\nInserting %d\n", random);
     auto start = high_resolution_clock::now();
     tree.root = tree.insert(tree.root, random);
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop - start);
-
+    // count leaves
+    counter = 0;
+    countLeaves(tree.root, &counter);
     printf("The Tree: ");
     tree.inorder_tree_walk(tree.root);
+    printf("\nLeaves: %d\n", counter);
     printf("\n");
 
     cout << "Insertion time " << duration.count() << " microseconds, size " << A.size() << endl;
@@ -104,7 +112,7 @@ int main(int argc, char const *argv[])
     tree.inorder_tree_walk(tree.root);
     printf("\n");
     cout << "Deletion time " << duration.count() << " microseconds, size " << A.size() << endl;
-    cout << "Deletion status is " << tree.deletion_success<<endl;
+    cout << "Deletion status is " << tree.deletion_success << endl;
     printf("\n");
     printf("Balance or the root: %d\n", tree.get_balance(tree.root));
     printf("Height: %d\n", tree.get_height(tree.root));
@@ -116,8 +124,24 @@ int main(int argc, char const *argv[])
     {
         printf("Is Not AVL\n");
     }
+    counter = 0;
+    countLeaves(tree.root, &counter);
+    printf("Leaves: %d\n", counter);
 }
 
+void countLeaves(Node *tracker, int *counter)
+{
+    if (tracker != NIL)
+    {
+        if ((tracker->left == NIL) && (tracker->right == NIL))
+        {
+            *counter = *counter + 1;
+        }
+        countLeaves(tracker->left, counter);
+        tracker->get_val();
+        countLeaves(tracker->right, counter);
+    }
+}
 /*
     Node root = Node(12);
     Node lc = Node(8);
