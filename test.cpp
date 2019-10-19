@@ -138,7 +138,6 @@ void countLeaves(Node *tracker, int *counter)
             *counter = *counter + 1;
         }
         countLeaves(tracker->left, counter);
-        tracker->get_val();
         countLeaves(tracker->right, counter);
     }
 }

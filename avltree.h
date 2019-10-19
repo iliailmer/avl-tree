@@ -114,34 +114,19 @@ void AVLTree::assign_parent(Node *root)
 Node *AVLTree::search(Node *x, int key)
 {
     /* Search for a key */
-    while (x != NIL && key != x->get_val())
+    Node *temp = x;
+    while (temp != NIL && key != temp->get_val())
     {
-        if (key < x->get_val())
+        if (key < temp->get_val())
         {
-            x = x->left;
+            temp = temp->left;
         }
         else
         {
-            x = x->right;
+            temp = temp->right;
         }
     }
-    return x;
-    /* if (x == NIL)
-    {
-        return nullptr;
-    }
-    if (x->get_val() == key)
-    {
-        return x;
-    }
-    if (key < x->get_val())
-    {
-        return this->search(x->left, key);
-    }
-    else
-    {
-        return this->search(x->right, key);
-    } */
+    return temp;
 }
 
 Node *AVLTree::tree_minimum(Node *x)
@@ -155,11 +140,12 @@ Node *AVLTree::tree_minimum(Node *x)
 
 Node *AVLTree::tree_maximum(Node *x)
 {
-    while (x->right != NIL)
+    Node *temp = x;
+    while (temp->right != NIL)
     {
-        x = x->right;
+        temp = temp->right;
     }
-    return x;
+    return temp;
 }
 
 Node *AVLTree::tree_succsessor(Node *x)
@@ -224,12 +210,12 @@ Node *AVLTree::insert(Node *root, int key)
     }
     if (key < root->val)
     {
-        root->left = insert(root->left, key); // T(n/2)
+        root->left = this->insert(root->left, key); // T(n/2)
         root->left->p = root;
     }
     else if (key > root->val)
     {
-        root->right = insert(root->right, key); // T(n/2)
+        root->right = this->insert(root->right, key); // T(n/2)
         root->right->p = root;
     }
     else // Equal keys are not allowed in BST
@@ -399,7 +385,7 @@ Node *AVLTree::_delete(Node *node, int key)
         // if it has one or no children
         if ((node->left == NIL) || (node->right == NIL))
         {
-            Node *temp;
+            Node *temp = NIL;
 
             if (node->left != NIL)
             {
@@ -417,7 +403,6 @@ Node *AVLTree::_delete(Node *node, int key)
             else
             {
                 this->_transplant(node, temp);
-                //*node = *temp; // swap the content of the temp var into node.
             }
             this->deletion_success = 1;
             free(temp);
@@ -459,7 +444,8 @@ Node *AVLTree::_delete(Node *node, int key)
     return node;
 }
 
-/* if (root == NIL)
+/* 
+if (root == NIL)
     {
         return root;
     }
@@ -523,7 +509,9 @@ Node *AVLTree::_delete(Node *node, int key)
         this->right_rotate(root->right);
         return this->left_rotate(root);
     }
-    return root; // to avoid a warning */
+    return root; // to avoid a warning 
+
+*/
 
 Node *AVLTree::rebalance(Node *node)
 {
