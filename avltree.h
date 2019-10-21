@@ -14,28 +14,26 @@ public:
     AVLTree(vector<int> A, int start, int finish);
     ~AVLTree();
     int deletion_success;
-    void inorder_tree_walk(Node *node);
-    void preorder_tree_walk(Node *node);
-    void postorder_tree_walk(Node *node);
-    void assign_parent(Node *root);
-
-    void _transplant(Node *u, Node *v);
-
+    void inorder_tree_walk(Node *node);   // O(n)
+    void preorder_tree_walk(Node *node);  // O(n)
+    void postorder_tree_walk(Node *node); // O(n)
+    void assign_parent(Node *root);       // not using
+    void _transplant(Node *u, Node *v);   // O(1)
     void get_height();
-
-    int get_height(Node *root);
-    int get_balance(Node *node);
-    bool is_avl(Node *root);
-    Node *insert(Node *root, int key);
-    Node *_delete(Node *root, int key);
-    Node *rebalance(Node *node);
-    Node *left_rotate(Node *node);
-    Node *right_rotate(Node *node);
-    Node *search(Node *x, int key);
-    Node *tree_minimum(Node *x);
-    Node *tree_maximum(Node *x);
-    Node *tree_succsessor(Node *x);
-    Node *root_from_array(vector<int> A, int start, int finish);
+    int height(Node *root);                                      // O(n log n)
+    int get_height(Node *root);                                  // O(n log n)
+    int get_balance(Node *node);                                 // O(1)
+    bool is_avl(Node *root);                                     // O(n log n)
+    Node *insert(Node *root, int key);                           // O(log n) + O(log n) + time to get heights (which is big!)
+    Node *_delete(Node *root, int key);                          // O(log n) + O(log n) + time to get heights (which is big!)
+    Node *rebalance(Node *node);                                 // not using
+    Node *left_rotate(Node *node);                               // O(1)
+    Node *right_rotate(Node *node);                              // O(1)
+    Node *search(Node *x, int key);                              // O(log n)
+    Node *tree_minimum(Node *x);                                 // O(log n)
+    Node *tree_maximum(Node *x);                                 // O(log n)
+    Node *tree_succsessor(Node *x);                              // O(log n)
+    Node *root_from_array(vector<int> A, int start, int finish); // not using
 };
 
 AVLTree::AVLTree(vector<int> A, int start, int finish)
@@ -129,16 +127,17 @@ Node *AVLTree::search(Node *x, int key)
     return temp;
 }
 
-Node *AVLTree::tree_minimum(Node *x)
+Node *AVLTree::tree_minimum(Node *x) // O(log n)
 {
-    while (x->left != NIL)
+    Node *temp = x;
+    while (temp->left != NIL)
     {
-        x = x->left;
+        temp = temp->left;
     }
-    return x;
+    return temp;
 }
 
-Node *AVLTree::tree_maximum(Node *x)
+Node *AVLTree::tree_maximum(Node *x) // O(log n)
 {
     Node *temp = x;
     while (temp->right != NIL)
@@ -165,16 +164,26 @@ Node *AVLTree::tree_succsessor(Node *x)
     return y;
 }
 
+int AVLTree::height(Node *node)
+{
+    if (node == NIL)
+    {
+        return 0;
+    }
+    return node->height;
+}
+
 int AVLTree::get_height(Node *root)
 {
     if (root == NIL)
     {
         return 0;
     }
-    int leftHeight = this->get_height(root->left);
-    int rightHeight = this->get_height(root->right);
+    int leftHeight = height(root->left);
 
-    int max_height = fmax(leftHeight, rightHeight) + 1;
+    int rightHeight = height(root->right);
+
+    int max_height = max(leftHeight, rightHeight) + 1;
     root->height = max_height;
     return max_height;
 }
@@ -199,50 +208,50 @@ Node *AVLTree::root_from_array(vector<int> A, int start, int finish)
     return root;
 }
 
-Node *AVLTree::insert(Node *root, int key)
+Node *AVLTree::insert(Node *node, int key)
 {
     /*
     insert a node into a binary tree.
     */
-    if (root == NIL)
+    if (node == NIL)
     {
         return (newNode(key)); // O(1)
     }
-    if (key < root->val)
+    if (key < node->val)
     {
-        root->left = this->insert(root->left, key); // T(n/2)
-        root->left->p = root;
+        node->left = this->insert(node->left, key); // T(n/2)
+        node->left->p = node;
     }
-    else if (key > root->val)
+    else if (key > node->val)
     {
-        root->right = this->insert(root->right, key); // T(n/2)
-        root->right->p = root;
+        node->right = this->insert(node->right, key); // T(n/2)
+        node->right->p = node;
     }
-    else // Equal keys are not allowed in BST
+    else
     {
-        return root;
+        return node;
     }
-    root->height = this->get_height(root); // O(hlog(h))
-    int balance = this->get_balance(root); // O(1)
-    if (balance > 1 && key < root->left->val)
+    node->height = 1 + max(height(node->left), height(node->right)); // O(i log i) where i is the number of nodes in the current subtree
+    int balance = this->get_balance(node);                           // O(1)
+    if (balance > 1 && node->left != NIL && key < node->left->val)
     {
-        return this->right_rotate(root); // O(1)
+        return this->right_rotate(node); // O(1)
     }
-    if (balance > 1 && key > root->left->val)
+    if (balance > 1 && node->left != NIL && key > node->left->val)
     {
-        this->left_rotate(root->left);
-        return this->right_rotate(root); // O(1)
+        node->left = this->left_rotate(node->left);
+        return this->right_rotate(node); // O(1)
     }
-    if (balance < -1 && key > root->right->val)
+    if (balance < -1 && node->right != NIL && key > node->right->val)
     {
-        return this->left_rotate(root); // O(1)
+        return this->left_rotate(node); // O(1)
     }
-    if (balance < -1 && key < root->right->val)
+    if (balance < -1 && node->right != NIL && key < node->right->val)
     {
-        this->right_rotate(root->right);
-        return this->left_rotate(root); // O(1)
+        node->right = this->right_rotate(node->right);
+        return this->left_rotate(node); // O(1)
     }
-    return root;
+    return node;
 }
 
 int AVLTree::get_balance(Node *node)
@@ -252,23 +261,8 @@ int AVLTree::get_balance(Node *node)
         return 0;
     }
     int left_height, right_height;
-    if (node->left == NIL)
-    {
-        left_height = 0;
-    }
-    else
-    {
-        left_height = node->left->height;
-    }
-    if (node->right == NIL)
-    {
-        right_height = 0;
-    }
-    else
-    {
-        right_height = node->right->height;
-    }
-
+    left_height = height(node->left);
+    right_height = height(node->right);
     return left_height - right_height;
 }
 
@@ -332,6 +326,8 @@ Node *AVLTree::left_rotate(Node *x)
     }
     y->left = x;
     x->p = y;
+    x->height = 1 + max(height(x->left), height(x->right));
+    y->height = 1 + max(height(y->left), height(y->right));
     return y;
 }
 
@@ -358,7 +354,8 @@ Node *AVLTree::right_rotate(Node *y)
     }
     x->right = y;
     y->p = x;
-
+    x->height = 1 + max(height(x->left), height(x->right));
+    y->height = 1 + max(height(y->left), height(y->right));
     return x;
 }
 

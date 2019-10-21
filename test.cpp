@@ -46,20 +46,21 @@ void display(vector<int> A)
 
 int main(int argc, char const *argv[])
 {
-    vector<int> A = create_random_data(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]));
-
+    vector<int> A; // = create_random_data(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]));
     Node *root = NIL;
 
-    //display(A);
-
     AVLTree tree = AVLTree(root);
-
+    for (int i = 0; i < atoi(argv[1]); i++)
+    {
+        A.push_back(i);
+    }
+    display(A);
     for (size_t i = 0; i < A.size(); i++)
     {
         tree.root = tree.insert(tree.root, A[i]);
     }
-
-    printf("\nThe Tree: ");
+    printf("\n ROOT: %d\n", tree.root->val);
+    printf("\nThe Tree of height %d: ", tree.root->height);
     tree.inorder_tree_walk(tree.root);
     int random = create_random_data(atoi(argv[2]), atoi(argv[3])); // get 1 random integer
     int val, counter = 0;
@@ -114,7 +115,7 @@ int main(int argc, char const *argv[])
     cout << "Deletion time " << duration.count() << " microseconds, size " << A.size() << endl;
     cout << "Deletion status is " << tree.deletion_success << endl;
     printf("\n");
-    printf("Balance or the root: %d\n", tree.get_balance(tree.root));
+    printf("Balance of the root: %d\n", tree.get_balance(tree.root));
     printf("Height: %d\n", tree.get_height(tree.root));
     if (tree.is_avl(tree.root))
     {

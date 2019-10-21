@@ -16,9 +16,9 @@ public:
     int get_left();
     int get_right();
     int get_parent();
-
     void set_left(Node *left_child);
     void set_right(Node *right_child);
+
     Node(int value);
     Node();
     ~Node();
@@ -31,7 +31,7 @@ Node::Node()
 Node::Node(int value)
 {
     Node::val = value;
-    Node::height = 0;
+    Node::height = 1;
     Node::left = NIL;
     Node::right = NIL;
     Node::p = NIL;
