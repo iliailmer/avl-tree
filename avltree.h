@@ -211,7 +211,7 @@ Node *AVLTree::root_from_array(vector<int> A, int start, int finish)
 Node *AVLTree::insert(Node *node, int key)
 {
     /*
-    insert a node into a binary tree.
+    insert a node into an avl tree.
     */
     if (node == NIL)
     {
@@ -231,7 +231,7 @@ Node *AVLTree::insert(Node *node, int key)
     {
         return node;
     }
-    node->height = 1 + max(height(node->left), height(node->right)); // O(i log i) where i is the number of nodes in the current subtree
+    node->height = 1 + max(height(node->left), height(node->right)); // O(1)
     int balance = this->get_balance(node);                           // O(1)
     if (balance > 1 && node->left != NIL && key < node->left->val)
     {
@@ -285,6 +285,7 @@ bool AVLTree::is_avl(Node *root)
 
 void AVLTree::_transplant(Node *u, Node *v)
 {
+
     if (u->p == NIL)
     {
         this->root = v;
@@ -382,35 +383,26 @@ Node *AVLTree::_delete(Node *node, int key)
         // if it has one or no children
         if ((node->left == NIL) || (node->right == NIL))
         {
-            Node *temp = NIL;
+            Node *temp = node;
 
             if (node->left != NIL)
             {
-                temp = node->left;
+                node = node->left;
             }
             else
             {
-                temp = node->right;
+                node = node->right;
             }
-            if (temp == NIL) // no children
-            {
-                temp = node;
-                node = NIL;
-            }
-            else
-            {
-                this->_transplant(node, temp);
-            }
+            this->_transplant(temp, node);
             this->deletion_success = 1;
             free(temp);
         }
         else
         {
             // node with two children
-            Node *temp = this->tree_minimum(node->right);
+            Node *temp = this->tree_minimum(node->right); // find successor
             node->val = temp->val;
             node->right = this->_delete(node->right, temp->val);
-            this->deletion_success = 1;
         }
     }
     if (node == NIL)

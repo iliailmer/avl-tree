@@ -9,22 +9,11 @@
 #include <chrono>
 using namespace std;
 using namespace std::chrono;
-vector<int> create_random_data(int n, int min, int max)
-{
-    std::random_device r;
-    std::seed_seq seed{r(), r(), r(), r(), r(), r(), r(), r()};
-    std::mt19937 eng(seed); // a source of random data
 
-    std::uniform_int_distribution<int> dist(min, max);
-    std::vector<int> v(n);
-
-    generate(begin(v), end(v), bind(dist, eng));
-    return v;
-}
 int create_random_data(int min, int max)
 {
     std::random_device r;
-    std::seed_seq seed{r(), r(), r(), r(), r(), r(), r(), r()};
+    std::seed_seq seed{r()};
     std::mt19937 eng(seed); // a source of random data
 
     std::uniform_int_distribution<int> dist(min, max);
@@ -33,6 +22,7 @@ int create_random_data(int min, int max)
     return v;
 }
 void countLeaves(Node *tracker, int *counter);
+int countNodes(Node *tracker);
 
 void display(vector<int> A)
 {
@@ -46,57 +36,64 @@ void display(vector<int> A)
 
 int main(int argc, char const *argv[])
 {
-    vector<int> A; // = create_random_data(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]));
+    vector<int> A;
     Node *root = NIL;
 
     AVLTree tree = AVLTree(root);
     for (int i = 0; i < atoi(argv[1]); i++)
     {
-        A.push_back(i);
+        A.push_back(i); //create_random_data(atoi(argv[2]), atoi(argv[3])));
     }
     display(A);
     for (size_t i = 0; i < A.size(); i++)
     {
         tree.root = tree.insert(tree.root, A[i]);
     }
-    printf("\n ROOT: %d\n", tree.root->val);
-    printf("\nThe Tree of height %d: ", tree.root->height);
-    tree.inorder_tree_walk(tree.root);
+    printf("\nThe AVL-Tree is of height %d\n", tree.root->height);
     int random = create_random_data(atoi(argv[2]), atoi(argv[3])); // get 1 random integer
-    int val, counter = 0;
-
+    int val, counter, nodes;
     counter = 0;
+    nodes = countNodes(tree.root);
     countLeaves(tree.root, &counter);
-    printf("\nLeaves: %d\n", counter);
-    printf("\nInserting %d\n", random);
+    printf("\nLeaves: %d\nNodes: %d\n", counter, nodes);
+    printf("\nInserting random number %d\n", random);
     auto start = high_resolution_clock::now();
     tree.root = tree.insert(tree.root, random);
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop - start);
     // count leaves
     counter = 0;
+    nodes = countNodes(tree.root);
     countLeaves(tree.root, &counter);
-    printf("The Tree: ");
-    tree.inorder_tree_walk(tree.root);
-    printf("\nLeaves: %d\n", counter);
-    printf("\n");
+    printf("The new AVL-Tree: ");
+    //tree.inorder_tree_walk(tree.root);
+    printf("\nLeaves: %d\nNodes: %d\nHeight: %d\n", counter, nodes, tree.root->height);
 
     cout << "Insertion time " << duration.count() << " microseconds, size " << A.size() << endl;
 
     cout << "Enter a value to find:" << endl;
 
     cin >> val;
-    start = high_resolution_clock::now();
     Node *found = NIL;
+
+    start = high_resolution_clock::now();
     found = tree.search(tree.root, val);
     stop = high_resolution_clock::now();
+
     if (found != NIL)
     {
-        printf("Success, found %d, its parent was %d\n", found->get_val(), found->p->get_val());
+        if (found == found->p->left)
+        {
+            printf("Success, found %d, its parent is %d, its sibling (right) is %d\n", found->get_val(), found->p->get_val(), found->p->right->get_val());
+        }
+        if (found == found->p->right)
+        {
+            printf("Success, found %d, its parent is %d, its sibling (left) is %d\n", found->get_val(), found->p->get_val(), found->p->left->get_val());
+        }
     }
     else
     {
-        printf("Search failed, %d not found\n", val);
+        printf("Search failed, %d not found :(\n", val);
     }
     cout << "Search time " << duration.count() << " microseconds, size " << A.size() << endl;
 
@@ -104,19 +101,27 @@ int main(int argc, char const *argv[])
     cin >> val;
     printf("\n");
     printf("Before: ");
+    printf("\n\tLeaves: %d\n\tNodes: %d\n\tHeight: %d\n", counter, nodes, tree.root->height);
     tree.inorder_tree_walk(tree.root);
     start = high_resolution_clock::now();
     Node *deleted = tree._delete(tree.root, val);
     stop = high_resolution_clock::now();
+
+    counter = 0;
+    nodes = countNodes(tree.root);
+    countLeaves(tree.root, &counter);
     printf("\n");
     printf("After: ");
+    printf("\n\tLeaves: %d\n\tNodes: %d\n\tHeight: %d\n", counter, nodes, tree.root->height);
     tree.inorder_tree_walk(tree.root);
     printf("\n");
-    cout << "Deletion time " << duration.count() << " microseconds, size " << A.size() << endl;
+    cout << "Deletion time " << duration.count() << " microseconds, tree size " << nodes << "nodes." << endl;
     cout << "Deletion status is " << tree.deletion_success << endl;
     printf("\n");
+
     printf("Balance of the root: %d\n", tree.get_balance(tree.root));
-    printf("Height: %d\n", tree.get_height(tree.root));
+    // printf("Height: %d\n", tree.get_height(tree.root));
+
     if (tree.is_avl(tree.root))
     {
         printf("Is AVL\n");
@@ -126,21 +131,41 @@ int main(int argc, char const *argv[])
         printf("Is Not AVL\n");
     }
     counter = 0;
+    nodes = countNodes(tree.root);
     countLeaves(tree.root, &counter);
-    printf("Leaves: %d\n", counter);
+    printf("Leaves: %d\nNodes: %d\n", counter, nodes);
 }
 
 void countLeaves(Node *tracker, int *counter)
 {
-    if (tracker != NIL)
+    if ((tracker->left == NIL) && (tracker->right == NIL))
     {
-        if ((tracker->left == NIL) && (tracker->right == NIL))
-        {
-            *counter = *counter + 1;
-        }
-        countLeaves(tracker->left, counter);
-        countLeaves(tracker->right, counter);
+        *counter = *counter + 1;
     }
+    else
+    {
+        if (tracker->left != NIL)
+        {
+            countLeaves(tracker->left, counter);
+        }
+        if (tracker->right != NIL)
+        {
+            countLeaves(tracker->right, counter);
+        }
+    }
+}
+int countNodes(Node *tracker)
+{
+    int count = 1;
+    if (tracker->left != NIL)
+    {
+        count += countNodes(tracker->left);
+    }
+    if (tracker->right != NIL)
+    {
+        count += countNodes(tracker->right);
+    }
+    return count;
 }
 /*
     Node root = Node(12);
