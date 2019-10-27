@@ -4,7 +4,6 @@
 #include <cmath>
 #include <vector>
 using namespace std;
-/*TODO: 1) insertion-> add rebalancing  */
 class AVLTree
 {
 public:
@@ -17,16 +16,15 @@ public:
     void inorder_tree_walk(Node *node);   // O(n)
     void preorder_tree_walk(Node *node);  // O(n)
     void postorder_tree_walk(Node *node); // O(n)
-    void assign_parent(Node *root);       // not using
-    void _transplant(Node *u, Node *v);   // O(1)
+    void assign_parent(Node *root);
+    void _transplant(Node *u, Node *v); // O(1)
     void get_height();
-    int height(Node *root);                                      // O(n log n)
-    int get_height(Node *root);                                  // O(n log n)
+    int height(Node *root);                                      // O(1)
+    int get_height(Node *root);                                  // O(1)
     int get_balance(Node *node);                                 // O(1)
     bool is_avl(Node *root);                                     // O(n log n)
-    Node *insert(Node *root, int key);                           // O(log n) + O(log n) + time to get heights (which is big!)
-    Node *_delete(Node *root, int key);                          // O(log n) + O(log n) + time to get heights (which is big!)
-    Node *rebalance(Node *node);                                 // not using
+    Node *insert(Node *root, int key);                           // O(log n) + O(log n)
+    Node *_delete(Node *root, int key);                          // O(log n) + O(log n)
     Node *left_rotate(Node *node);                               // O(1)
     Node *right_rotate(Node *node);                              // O(1)
     Node *search(Node *x, int key);                              // O(log n)
@@ -431,97 +429,4 @@ Node *AVLTree::_delete(Node *node, int key)
         return this->left_rotate(node);
     }
     return node;
-}
-
-/* 
-if (root == NIL)
-    {
-        return root;
-    }
-    Node *y;
-    // Classic BST Deletion
-    if (key < root->get_val())
-    {
-        root->left = this->_delete(root->left, key);
-    }
-    else if (key > root->get_val())
-    {
-        root->right = this->_delete(root->right, key);
-    }
-    else
-    { // root is the node we are deleting
-        if (root->left == NIL)
-        {
-            this->_transplant(root, root->right);
-            root = root->right;
-        }
-        else if (root->right == NIL)
-        {
-            this->_transplant(root, root->left);
-            root = root->left;
-        }
-        else
-        {
-            y = this->tree_minimum(root->right);
-            if (y->p != root)
-            {
-                this->_transplant(y, y->right);
-                y->right = root->right;
-                y->right->p = y;
-            }
-            this->_transplant(root, y);
-            y->left = root->left;
-            y->left->p = y;
-            y->height = this->get_height(y);
-            root = y;
-        }
-    }
-    // deletion is done, now onto rebalancing
-    root->height = this->get_height(root); // get the new heights
-    // rebalancing the tree.
-    int balance = this->get_balance(root);
-    if (balance > 1 && this->get_balance(root->left) >= 0)
-    {
-        return this->right_rotate(root);
-    }
-    if (balance > 1 && this->get_balance(root->left) < 0)
-    {
-        this->left_rotate(root->left);
-        return this->right_rotate(root);
-    }
-    if (balance < -1 && this->get_balance(root->right) <= 0)
-    {
-        return this->left_rotate(root);
-    }
-    if (balance < -1 && this->get_balance(root->right) <= 0)
-    {
-        this->right_rotate(root->right);
-        return this->left_rotate(root);
-    }
-    return root; // to avoid a warning 
-
-*/
-
-Node *AVLTree::rebalance(Node *node)
-{
-    int balance = this->get_balance(node);
-    if (balance > 1 && this->get_balance(node->left) >= 0)
-    {
-        return this->right_rotate(node);
-    }
-    if (balance > 1 && this->get_balance(node->left) < 0)
-    {
-        this->left_rotate(node->left);
-        return this->right_rotate(node);
-    }
-    if (balance < -1 && this->get_balance(node->right) <= 0)
-    {
-        return this->left_rotate(node);
-    }
-    if (balance < -1 && this->get_balance(node->right) <= 0)
-    {
-        this->right_rotate(node->right);
-        return this->left_rotate(node);
-    }
-    return node; // no rebalancing required
 }

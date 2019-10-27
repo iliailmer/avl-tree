@@ -40,14 +40,14 @@ int main(int argc, char const *argv[])
     Node *root = NIL;
 
     AVLTree tree = AVLTree(root);
-    for (int i = 0; i < atoi(argv[1]); i++)
+    /*     for (int i = 0; i < atoi(argv[1]); i++)
     {
-        A.push_back(i); //create_random_data(atoi(argv[2]), atoi(argv[3])));
-    }
-    display(A);
-    for (size_t i = 0; i < A.size(); i++)
+        A.push_back(i);
+    } */
+    //display(A);
+    for (size_t i = 0; i < atoi(argv[1]); i++)
     {
-        tree.root = tree.insert(tree.root, A[i]);
+        tree.root = tree.insert(tree.root, i);
     }
     printf("\nThe AVL-Tree is of height %d\n", tree.root->height);
     int random = create_random_data(atoi(argv[2]), atoi(argv[3])); // get 1 random integer
@@ -69,7 +69,7 @@ int main(int argc, char const *argv[])
     //tree.inorder_tree_walk(tree.root);
     printf("\nLeaves: %d\nNodes: %d\nHeight: %d\n", counter, nodes, tree.root->height);
 
-    cout << "Insertion time " << duration.count() << " microseconds, size " << A.size() << endl;
+    cout << "Insertion time " << duration.count() << " microseconds, size " << nodes << endl;
 
     cout << "Enter a value to find:" << endl;
 
@@ -95,14 +95,14 @@ int main(int argc, char const *argv[])
     {
         printf("Search failed, %d not found :(\n", val);
     }
-    cout << "Search time " << duration.count() << " microseconds, size " << A.size() << endl;
+    cout << "Search time " << duration.count() << " microseconds, size " << nodes << endl;
 
     cout << "Enter a value to delete" << endl;
     cin >> val;
     printf("\n");
     printf("Before: ");
     printf("\n\tLeaves: %d\n\tNodes: %d\n\tHeight: %d\n", counter, nodes, tree.root->height);
-    tree.inorder_tree_walk(tree.root);
+    //tree.inorder_tree_walk(tree.root);
     start = high_resolution_clock::now();
     Node *deleted = tree._delete(tree.root, val);
     stop = high_resolution_clock::now();
@@ -113,9 +113,9 @@ int main(int argc, char const *argv[])
     printf("\n");
     printf("After: ");
     printf("\n\tLeaves: %d\n\tNodes: %d\n\tHeight: %d\n", counter, nodes, tree.root->height);
-    tree.inorder_tree_walk(tree.root);
+    //tree.inorder_tree_walk(tree.root);
     printf("\n");
-    cout << "Deletion time " << duration.count() << " microseconds, tree size " << nodes << "nodes." << endl;
+    cout << "Deletion time " << duration.count() << " microseconds, tree size " << nodes << " nodes." << endl;
     cout << "Deletion status is " << tree.deletion_success << endl;
     printf("\n");
 
@@ -134,6 +134,7 @@ int main(int argc, char const *argv[])
     nodes = countNodes(tree.root);
     countLeaves(tree.root, &counter);
     printf("Leaves: %d\nNodes: %d\n", counter, nodes);
+    return 0;
 }
 
 void countLeaves(Node *tracker, int *counter)
