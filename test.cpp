@@ -40,84 +40,110 @@ int main(int argc, char const *argv[])
     Node *root = NIL;
 
     AVLTree tree = AVLTree(root);
-    /*     for (int i = 0; i < atoi(argv[1]); i++)
-    {
-        A.push_back(i);
-    } */
-    //display(A);
+
+    int operation_count = 0;
     for (size_t i = 0; i < atoi(argv[1]); i++)
     {
-        tree.root = tree.insert(tree.root, i);
+        tree.root = tree.insert(tree.root, i, &operation_count);
     }
-    printf("\nThe AVL-Tree is of height %d\n", tree.root->height);
-    int random = create_random_data(atoi(argv[2]), atoi(argv[3])); // get 1 random integer
+
+    operation_count = operation_count / atoi(argv[1]);
+    tree.inorder_tree_walk(tree.root);
+    printf("\nThe AVL-Tree is of height %d, root is %d\n", tree.root->height, tree.root->get_val());
+
     int val, counter, nodes;
     counter = 0;
     nodes = countNodes(tree.root);
     countLeaves(tree.root, &counter);
-    printf("\nLeaves: %d\nNodes: %d\n", counter, nodes);
-    printf("\nInserting random number %d\n", random);
-    auto start = high_resolution_clock::now();
-    tree.root = tree.insert(tree.root, random);
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<microseconds>(stop - start);
-    // count leaves
-    counter = 0;
-    nodes = countNodes(tree.root);
-    countLeaves(tree.root, &counter);
-    printf("The new AVL-Tree: ");
-    //tree.inorder_tree_walk(tree.root);
-    printf("\nLeaves: %d\nNodes: %d\nHeight: %d\n", counter, nodes, tree.root->height);
+    printf("\nLeaves: %d\nTotal Nodes: %d\n", counter, nodes);
 
-    cout << "Insertion time " << duration.count() << " microseconds, size " << nodes << endl;
+    cout << "How many values to insert?" << endl;
+    int i, n, to_insert;
+    cin >> n;
+    i = 0;
+    while (i < n)
+    {
+        i += 1;
+        cout << "Enter a value to insert:" << endl;
+        cin >> to_insert;
+
+        operation_count = 0;
+        auto start = high_resolution_clock::now();
+        tree.root = tree.insert(tree.root, to_insert, &operation_count);
+        auto stop = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds>(stop - start);
+        // count leaves
+        counter = 0;
+        nodes = countNodes(tree.root);
+        countLeaves(tree.root, &counter);
+        printf("The new AVL-Tree: ");
+        tree.inorder_tree_walk(tree.root);
+        printf("\nLeaves: %d\nNodes: %d\nHeight: %d\n", counter, nodes, tree.root->height);
+
+        cout << "Insertion time " << duration.count() << " microseconds, size " << nodes << endl;
+        cout << "Operation count " << operation_count << " operations" << endl;
+    }
+    cout << "\nInsertion finished, begin search\n"
+         << endl;
 
     cout << "Enter a value to find:" << endl;
-
     cin >> val;
-    Node *found = NIL;
-
-    start = high_resolution_clock::now();
-    found = tree.search(tree.root, val);
-    stop = high_resolution_clock::now();
-
+    Node *found;
+    operation_count = 0;
+    auto start = high_resolution_clock::now();
+    found = tree.search(tree.root, val, &operation_count);
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
     if (found != NIL)
     {
-        if (found == found->p->left)
-        {
-            printf("Success, found %d, its parent is %d, its sibling (right) is %d\n", found->get_val(), found->p->get_val(), found->p->right->get_val());
-        }
-        if (found == found->p->right)
-        {
-            printf("Success, found %d, its parent is %d, its sibling (left) is %d\n", found->get_val(), found->p->get_val(), found->p->left->get_val());
-        }
+        printf("Success, found %d,\toperation count %d\n", found->get_val(), operation_count);
     }
     else
     {
-        printf("Search failed, %d not found :(\n", val);
+        printf("Search failed, %d not found :(\tOperation count %d\n", val, operation_count);
     }
-    cout << "Search time " << duration.count() << " microseconds, size " << nodes << endl;
+    cout << "Search time " << duration.count() << " microseconds" << endl;
 
+    cout << "\nSearch finished, begin deletion\n"
+         << endl;
     cout << "Enter a value to delete" << endl;
     cin >> val;
+    operation_count = 0;
     printf("\n");
     printf("Before: ");
+    if (atoi(argv[1]) <= 200)
+    {
+        tree.inorder_tree_walk(tree.root);
+    }
+    else
+    {
+        printf("Tree too big, no inorder output.");
+    }
     printf("\n\tLeaves: %d\n\tNodes: %d\n\tHeight: %d\n", counter, nodes, tree.root->height);
-    //tree.inorder_tree_walk(tree.root);
     start = high_resolution_clock::now();
-    Node *deleted = tree._delete(tree.root, val);
+    Node *deleted = tree._delete(tree.root, val, &operation_count);
     stop = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(stop - start);
 
     counter = 0;
     nodes = countNodes(tree.root);
     countLeaves(tree.root, &counter);
     printf("\n");
     printf("After: ");
+    if (atoi(argv[1]) <= 200)
+    {
+        tree.inorder_tree_walk(tree.root);
+    }
+    else
+    {
+        printf("Tree too big, no inorder output.");
+    }
     printf("\n\tLeaves: %d\n\tNodes: %d\n\tHeight: %d\n", counter, nodes, tree.root->height);
-    //tree.inorder_tree_walk(tree.root);
     printf("\n");
     cout << "Deletion time " << duration.count() << " microseconds, tree size " << nodes << " nodes." << endl;
-    cout << "Deletion status is " << tree.deletion_success << endl;
+    cout << "Deletion status is " << tree.deletion_success << " (1 - success, 0 - fail, no such element found)" << endl;
     printf("\n");
+    cout << "Operation count " << operation_count << " operations" << endl;
 
     printf("Balance of the root: %d\n", tree.get_balance(tree.root));
     // printf("Height: %d\n", tree.get_height(tree.root));

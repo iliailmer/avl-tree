@@ -1,6 +1,7 @@
 #include "node.h"
 #include <cstddef>
 #include <stdio.h>
+#include <iostream>
 #include <cmath>
 #include <vector>
 using namespace std;
@@ -23,11 +24,11 @@ public:
     int get_height(Node *root);                                  // O(1)
     int get_balance(Node *node);                                 // O(1)
     bool is_avl(Node *root);                                     // O(n log n)
-    Node *insert(Node *root, int key);                           // O(log n) + O(log n)
-    Node *_delete(Node *root, int key);                          // O(log n) + O(log n)
+    Node *insert(Node *root, int key, int *operation_count);     // O(log n) + O(log n)
+    Node *_delete(Node *root, int key, int *operation_count);    // O(log n) + O(log n)
     Node *left_rotate(Node *node);                               // O(1)
     Node *right_rotate(Node *node);                              // O(1)
-    Node *search(Node *x, int key);                              // O(log n)
+    Node *search(Node *x, int key, int *operation_count);        // O(log n)
     Node *tree_minimum(Node *x);                                 // O(log n)
     Node *tree_maximum(Node *x);                                 // O(log n)
     Node *tree_succsessor(Node *x);                              // O(log n)
@@ -107,22 +108,24 @@ void AVLTree::assign_parent(Node *root)
     }
 }
 
-Node *AVLTree::search(Node *x, int key)
+Node *AVLTree::search(Node *x, int key, int *operation_count)
 {
     /* Search for a key */
-    Node *temp = x;
-    while (temp != NIL && key != temp->get_val())
+    while (x != NIL && key != x->val)
     {
-        if (key < temp->get_val())
+        if (key < x->val)
         {
-            temp = temp->left;
+            *operation_count += 1;
+            x = x->left;
         }
         else
         {
-            temp = temp->right;
+            *operation_count += 1;
+            x = x->right;
         }
     }
-    return temp;
+
+    return x;
 }
 
 Node *AVLTree::tree_minimum(Node *x) // O(log n)
@@ -206,10 +209,11 @@ Node *AVLTree::root_from_array(vector<int> A, int start, int finish)
     return root;
 }
 
-Node *AVLTree::insert(Node *node, int key)
+Node *AVLTree::insert(Node *node, int key, int *operation_count)
 {
     /*
     insert a node into an avl tree.
+    the operation_count keeps track of number of calls to ::insert
     */
     if (node == NIL)
     {
@@ -217,12 +221,14 @@ Node *AVLTree::insert(Node *node, int key)
     }
     if (key < node->val)
     {
-        node->left = this->insert(node->left, key); // T(n/2)
+        *operation_count += 1;
+        node->left = this->insert(node->left, key, operation_count); // T(n/2)
         node->left->p = node;
     }
     else if (key > node->val)
     {
-        node->right = this->insert(node->right, key); // T(n/2)
+        *operation_count += 1;
+        node->right = this->insert(node->right, key, operation_count); // T(n/2)
         node->right->p = node;
     }
     else
@@ -358,9 +364,8 @@ Node *AVLTree::right_rotate(Node *y)
     return x;
 }
 
-Node *AVLTree::_delete(Node *node, int key)
+Node *AVLTree::_delete(Node *node, int key, int *operation_count)
 {
-
     if (node == NIL)
     {
         this->deletion_success = 0;
@@ -369,11 +374,13 @@ Node *AVLTree::_delete(Node *node, int key)
     //search for the required node
     if (key < node->val)
     {
-        node->left = this->_delete(node->left, key);
+        *operation_count += 1;
+        node->left = this->_delete(node->left, key, operation_count);
     }
     else if (key > node->val)
     {
-        node->right = this->_delete(node->right, key);
+        *operation_count += 1;
+        node->right = this->_delete(node->right, key, operation_count);
     }
     else
     {
@@ -400,7 +407,8 @@ Node *AVLTree::_delete(Node *node, int key)
             // node with two children
             Node *temp = this->tree_minimum(node->right); // find successor
             node->val = temp->val;
-            node->right = this->_delete(node->right, temp->val);
+            *operation_count += 1;
+            node->right = this->_delete(node->right, temp->val, operation_count);
         }
     }
     if (node == NIL)
