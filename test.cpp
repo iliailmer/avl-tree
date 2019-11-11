@@ -36,7 +36,6 @@ void display(vector<int> A)
 
 int main(int argc, char const *argv[])
 {
-    vector<int> A;
     Node *root = NIL;
 
     AVLTree tree = AVLTree(root);
@@ -142,8 +141,7 @@ int main(int argc, char const *argv[])
     printf("\n");
     cout << "Deletion time " << duration.count() << " microseconds, tree size " << nodes << " nodes." << endl;
     cout << "Deletion status is " << tree.deletion_success << " (1 - success, 0 - fail, no such element found)" << endl;
-    printf("\n");
-    cout << "Operation count " << operation_count << " operations" << endl;
+    cout << "Operation count: " << operation_count << " operations" << endl;
 
     printf("Balance of the root: %d\n", tree.get_balance(tree.root));
     // printf("Height: %d\n", tree.get_height(tree.root));
