@@ -33,7 +33,28 @@ void display(vector<int> A)
     }
     printf("\n");
 }
+void print2DUtil(Node *root, int space)
+{
+    // Base case
+    if (root == NULL)
+        return;
 
+    // Increase distance between levels
+    space += 20;
+
+    // Process right child first
+    print2DUtil(root->right, space);
+
+    // Print current node after space
+    // count
+    cout << endl;
+    for (int i = 3; i < space; i++)
+        cout << " ";
+    cout << root->val << "\n";
+
+    // Process left child
+    print2DUtil(root->left, space);
+}
 int main(int argc, char const *argv[])
 {
     Node *root = NIL;
@@ -49,6 +70,8 @@ int main(int argc, char const *argv[])
     operation_count = operation_count / atoi(argv[1]);
     tree.inorder_tree_walk(tree.root);
     printf("\nThe AVL-Tree is of height %d, root is %d\n", tree.root->height, tree.root->get_val());
+
+    print2DUtil(tree.root, 0);
 
     int val, counter, nodes;
     counter = 0;
@@ -82,6 +105,9 @@ int main(int argc, char const *argv[])
         cout << "Insertion time " << duration.count() << " microseconds, size " << nodes << endl;
         cout << "Operation count " << operation_count << " operations" << endl;
     }
+
+    print2DUtil(tree.root, 0);
+
     cout << "\nInsertion finished, begin search\n"
          << endl;
 
@@ -112,7 +138,8 @@ int main(int argc, char const *argv[])
     printf("Before: ");
     if (atoi(argv[1]) <= 200)
     {
-        tree.inorder_tree_walk(tree.root);
+        //tree.inorder_tree_walk(tree.root);
+        print2DUtil(tree.root, 0);
     }
     else
     {
@@ -131,7 +158,8 @@ int main(int argc, char const *argv[])
     printf("After: ");
     if (atoi(argv[1]) <= 200)
     {
-        tree.inorder_tree_walk(tree.root);
+        //tree.inorder_tree_walk(tree.root);
+        print2DUtil(tree.root, 0);
     }
     else
     {
