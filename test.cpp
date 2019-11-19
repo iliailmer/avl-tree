@@ -6,6 +6,7 @@
 #include <functional> // bind
 #include <stdio.h>
 #include <iostream>
+#include <fstream>
 #include <chrono>
 using namespace std;
 using namespace std::chrono;
@@ -33,7 +34,7 @@ void display(vector<int> A)
     }
     printf("\n");
 }
-void print2DUtil(Node *root, int space)
+void print2DUtil(Node *root, int space, ofstream &outfile)
 {
     // Base case
     if (root == NULL)
@@ -43,17 +44,18 @@ void print2DUtil(Node *root, int space)
     space += 20;
 
     // Process right child first
-    print2DUtil(root->right, space);
+    print2DUtil(root->right, space, outfile);
 
     // Print current node after space
     // count
-    cout << endl;
+    outfile << "\n"; //cout << endl;
     for (int i = 3; i < space; i++)
-        cout << " ";
-    cout << root->val << "\n";
+        outfile << " "; //cout << " ";
+    outfile << root->val << "\n";
+    //cout << root->val << "\n";
 
     // Process left child
-    print2DUtil(root->left, space);
+    print2DUtil(root->left, space, outfile);
 }
 int main(int argc, char const *argv[])
 {
@@ -71,7 +73,10 @@ int main(int argc, char const *argv[])
     tree.inorder_tree_walk(tree.root);
     printf("\nThe AVL-Tree is of height %d, root is %d\n", tree.root->height, tree.root->get_val());
 
-    print2DUtil(tree.root, 0);
+    ofstream outfile;
+    outfile.open("original.txt", ios::out);
+    print2DUtil(tree.root, 0, outfile);
+    outfile.close();
 
     int val, counter, nodes;
     counter = 0;
@@ -99,15 +104,15 @@ int main(int argc, char const *argv[])
         nodes = countNodes(tree.root);
         countLeaves(tree.root, &counter);
         printf("The new AVL-Tree: ");
-        tree.inorder_tree_walk(tree.root);
-        printf("\nLeaves: %d\nNodes: %d\nHeight: %d\n", counter, nodes, tree.root->height);
+        //tree.inorder_tree_walk(tree.root);
+        printf("\n\tLeaves: %d\n\tNodes: %d\n\tHeight: %d\n", counter, nodes, tree.root->height);
 
         cout << "Insertion time " << duration.count() << " microseconds, size " << nodes << endl;
         cout << "Operation count " << operation_count << " operations" << endl;
     }
-
-    print2DUtil(tree.root, 0);
-
+    outfile.open("inserted.txt");
+    print2DUtil(tree.root, 0, outfile);
+    outfile.close();
     cout << "\nInsertion finished, begin search\n"
          << endl;
 
@@ -136,15 +141,18 @@ int main(int argc, char const *argv[])
     operation_count = 0;
     printf("\n");
     printf("Before: ");
-    if (atoi(argv[1]) <= 200)
+
+    outfile.open("deletion_before.txt", ios::out);
+    if (atoi(argv[1]) <= 20000)
     {
         //tree.inorder_tree_walk(tree.root);
-        print2DUtil(tree.root, 0);
+        print2DUtil(tree.root, 0, outfile);
     }
     else
     {
-        printf("Tree too big, no inorder output.");
+        printf("Tree too big, no output.");
     }
+    outfile.close();
     printf("\n\tLeaves: %d\n\tNodes: %d\n\tHeight: %d\n", counter, nodes, tree.root->height);
     start = high_resolution_clock::now();
     Node *deleted = tree._delete(tree.root, val, &operation_count);
@@ -156,15 +164,18 @@ int main(int argc, char const *argv[])
     countLeaves(tree.root, &counter);
     printf("\n");
     printf("After: ");
-    if (atoi(argv[1]) <= 200)
+    outfile.open("deletion_after.txt", ios::out);
+    if (atoi(argv[1]) <= 20000)
     {
         //tree.inorder_tree_walk(tree.root);
-        print2DUtil(tree.root, 0);
+        print2DUtil(tree.root, 0, outfile);
     }
     else
     {
         printf("Tree too big, no inorder output.");
     }
+    outfile.close();
+
     printf("\n\tLeaves: %d\n\tNodes: %d\n\tHeight: %d\n", counter, nodes, tree.root->height);
     printf("\n");
     cout << "Deletion time " << duration.count() << " microseconds, tree size " << nodes << " nodes." << endl;
