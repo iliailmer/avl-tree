@@ -41,7 +41,7 @@ void print2DUtil(Node *root, int space, ofstream &outfile)
         return;
 
     // Increase distance between levels
-    space += 20;
+    space += 10;
 
     // Process right child first
     print2DUtil(root->right, space, outfile);
@@ -73,7 +73,7 @@ int main(int argc, char const *argv[])
     operation_count = operation_count / atoi(argv[1]);
     tree.inorder_tree_walk(tree.root);
     printf("\nThe AVL-Tree is of height %d, root is %d\n", tree.root->height, tree.root->get_val());
-
+    printf("%d", tree.root->left->val);
     ofstream outfile;
     outfile.open("original.txt", ios::out);
     print2DUtil(tree.root, 0, outfile);
