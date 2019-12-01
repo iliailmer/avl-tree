@@ -3,3 +3,4 @@ test*
 .mypy*
 .vscode/
 a.out.dSYM/
+*.txt
