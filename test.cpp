@@ -50,8 +50,9 @@ void print2DUtil(Node *root, int space, ofstream &outfile)
     // count
     outfile << "\n"; //cout << endl;
     for (int i = 3; i < space; i++)
-        outfile << " "; //cout << " ";
-    outfile << root->val << "\n";
+        outfile << " ";           //cout << " ";
+    outfile << root->val << "\n"; // << "(" << root->height << ")"
+
     //cout << root->val << "\n";
 
     // Process left child

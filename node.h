@@ -80,7 +80,7 @@ Node *newNode(int value)
     node->left = NIL;
     node->right = NIL;
     node->p = NIL;
-    node->height = 0;
+    node->height = 1;
     return node;
 }
 

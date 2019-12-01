@@ -237,20 +237,20 @@ Node *AVLTree::insert(Node *node, int key, int *operation_count)
     }
     node->height = 1 + max(height(node->left), height(node->right)); // O(1)
     int balance = this->get_balance(node);                           // O(1)
-    if (balance > 1 && node->left != NIL && key < node->left->val)
+    if (balance > 1 && key < node->left->val)                        //&& node->left != NIL
     {
         return this->right_rotate(node); // O(1)
     }
-    if (balance > 1 && node->left != NIL && key > node->left->val)
+    if (balance > 1 && key > node->left->val) // node->left != NIL &&
     {
         node->left = this->left_rotate(node->left);
         return this->right_rotate(node); // O(1)
     }
-    if (balance < -1 && node->right != NIL && key > node->right->val)
+    if (balance < -1 && key > node->right->val) //&& node->right != NIL
     {
         return this->left_rotate(node); // O(1)
     }
-    if (balance < -1 && node->right != NIL && key < node->right->val)
+    if (balance < -1 && key < node->right->val) //&& node->right != NIL
     {
         node->right = this->right_rotate(node->right);
         return this->left_rotate(node); // O(1)
@@ -359,8 +359,8 @@ Node *AVLTree::right_rotate(Node *y)
     }
     x->right = y;
     y->p = x;
-    x->height = 1 + max(height(x->left), height(x->right));
     y->height = 1 + max(height(y->left), height(y->right));
+    x->height = 1 + max(height(x->left), height(x->right));
     return x;
 }
 
