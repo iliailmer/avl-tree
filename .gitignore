@@ -4,3 +4,4 @@ test*
 .vscode/
 a.out.dSYM/
 *.txt
+*.pdf
